@@ -1,22 +1,23 @@
 
+#### Setup ####
 library(matchingR)
 
-# set seed
-set.seed(1)
-# set number of students
-nstudents = 1000
-# set number of colleges
-ncolleges = 400
-# generate preferences
-uStudents = matrix(runif(ncolleges*nstudents), nrow = ncolleges, ncol = nstudents)
-uColleges = matrix(runif(nstudents*ncolleges), nrow = nstudents, ncol = ncolleges)
-# student-optimal matching
-results = galeShapley.collegeAdmissions(studentUtils =  uStudents, collegeUtils =  uColleges, slots = 2)
-str(results)
+#### Data Load ####
+ta_rank = read.csv("data/Grad Student TA Ranking Form.csv", header = TRUE, stringsAsFactors = FALSE)
+# course_rank = read.csv()
 
-galeShapley.checkStability(uStudents, uColleges, results$matched.students, results$matched.colleges)
+ta_rank = data.frame()
+course_rank = read.csv()
+
+#### Clean Course Names ####
+ta_cor_names = colnames(ta_rank)
+ta_cor_names = gsub("Course.Rankings..", "", ta_cor_names)
+colnames(ta_rank) = ta_cor_names
+rm(ta_cor_names)
 
 #### TAs ####
+
+tas = ta_rank$Username
 
 TAs = c("Jared", "Savannah", "RJ", "Ori", "Elyssa", "Tanaya", "Abbey")
 Courses = c("101", "102")
