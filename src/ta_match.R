@@ -17,15 +17,15 @@ ta_rank$Username = gsub("@.*$", "", ta_rank$Username)
 colnames(ta_rank) = c("Time", "Username", offered_courses)
 
 # Turn strings to Numeric
-ta_rank[ta_rank == "Preference 1"] = 1
-ta_rank[ta_rank == "Preference 2"] = 2
-ta_rank[ta_rank == "Preference 3"] = 3
-ta_rank[ta_rank == "Preference 4"] = 4
-ta_rank[ta_rank == "Preference 5"] = 5
-ta_rank[ta_rank == "Preference 6"] = 6
-ta_rank[ta_rank == "Can TA"] = 10
-ta_rank[ta_rank == "Last Resort"] = 50
-ta_rank[ta_rank == "Can Not TA"] = 99
+ta_rank[ta_rank == "Preference 6"] = 1
+ta_rank[ta_rank == "Preference 5"] = 2
+ta_rank[ta_rank == "Preference 4"] = 3
+ta_rank[ta_rank == "Preference 3"] = 4
+ta_rank[ta_rank == "Preference 2"] = 5
+ta_rank[ta_rank == "Preference 1"] = 6
+ta_rank[ta_rank == "Can TA"] = 0
+ta_rank[ta_rank == "Last Resort"] = -5
+ta_rank[ta_rank == "Can Not TA"] = -999
 
 # Make TA Key
 ta_key = data.frame("TAs" = ta_rank$Username, id = 1:nrow(ta_rank), stringsAsFactors = FALSE)
@@ -33,6 +33,13 @@ ta_key = data.frame("TAs" = ta_rank$Username, id = 1:nrow(ta_rank), stringsAsFac
 #### Instructors ####
 # Clean Emails
 course_rank$Username = gsub("@.*$", "", course_rank$Username)
+
+course_rank[course_rank == "6"] = 1
+course_rank[course_rank == "5"] = 2
+course_rank[course_rank == "4"] = 3
+course_rank[course_rank == "3"] = 4
+course_rank[course_rank == "2"] = 5
+course_rank[course_rank == "1"] = 6
 
 course_b1 = course_rank[, 3:(3+length(ta_key$TAs))]
 colnames(course_b1) = c("course", ta_key$TAs)
@@ -42,7 +49,7 @@ colnames(course_b2) = c("course", ta_key$TAs)
 course_picks = rbind(course_b1, course_b2)
 course_picks = course_picks[!is.na(course_picks$course),]
 
-course_picks[is.na(course_picks)] = 999
+course_picks[is.na(course_picks)] = -999
 
 #### Make Matrix ####
 # TAs
@@ -58,16 +65,16 @@ row.names(course_matrix) = offered_courses
 course_matrix = t(course_matrix)
 
 #### Match! ####
-results = galeShapley.collegeAdmissions(studentUtils =  ta_matrix, collegeUtils =  course_matrix, slots = 3, studentOptimal = TRUE)
+results = galeShapley.collegeAdmissions(studentUtils =  ta_matrix, collegeUtils =  course_matrix, slots = 3)
 
 # Is this match optimal?
 galeShapley.checkStability(ta_matrix, course_matrix, results$matched.students, results$matched.colleges)
 
-# Rename to make readable
+# Rename to make results readable
 colnames(results$matched.colleges) = c("TA1", "TA2", "TA3")
 row.names(results$matched.colleges) = offered_courses
-
 results$matched.colleges[] = ta_key$TAs[match(results$matched.colleges, ta_key$id)]
+
 results$matched.colleges
 
 
