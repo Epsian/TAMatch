@@ -6,12 +6,15 @@ library(matchingR)
 ta_rank = read.csv("data/Grad Student TA Ranking Form.csv", header = TRUE, stringsAsFactors = FALSE)
 course_rank = read.csv("data/Instructor TA Rank Form.csv", header = TRUE, stringsAsFactors = FALSE)
 
+# What courses are being offered? This MUST be in the same order as the google form
+offered_courses = c("101", "102", "103", "104", "105")
+
 #### TAs ####
 # Clean Emails
 ta_rank$Username = gsub("@.*$", "", ta_rank$Username)
 
 # Clean Course Names
-colnames(ta_rank) = c("Time", "Username", "101", "102", "103", "104", "105")
+colnames(ta_rank) = c("Time", "Username", offered_courses)
 
 # Turn strings to Numeric
 ta_rank[ta_rank == "Preference 1"] = 1
@@ -25,70 +28,46 @@ ta_rank[ta_rank == "Last Resort"] = 50
 ta_rank[ta_rank == "Can Not TA"] = 99
 
 # Make TA Key
-ta_key = data.frame("TAs" = ta_rank$Username, id = 1:nrow(ta_rank))
+ta_key = data.frame("TAs" = ta_rank$Username, id = 1:nrow(ta_rank), stringsAsFactors = FALSE)
 
 #### Instructors ####
 # Clean Emails
 course_rank$Username = gsub("@.*$", "", course_rank$Username)
 
-courses = course_rank[,3:5]
-courses = unlist(courses)
-courses = courses[!is.na(courses)]
-courses = sort(courses)
+course_b1 = course_rank[, 3:(3+length(ta_key$TAs))]
+colnames(course_b1) = c("course", ta_key$TAs)
+course_b2 = course_rank[, (4+length(ta_key$TAs)):ncol(course_rank)]
+colnames(course_b2) = c("course", ta_key$TAs)
+
+course_picks = rbind(course_b1, course_b2)
+course_picks = course_picks[!is.na(course_picks$course),]
+
+course_picks[is.na(course_picks)] = 999
 
 #### Make Matrix ####
 # TAs
-ta_matrix = matrix(t(ta_rank[ , 3:7]), ncol = nrow(ta_key), nrow = length(courses))
-colnames(ta_matrix) = ta_key$TAs
-row.names(ta_matrix) = courses
+ta_matrix = as.matrix(ta_rank[ , 3:ncol(ta_rank)])
+storage.mode(ta_matrix) = "numeric"
+row.names(ta_matrix) = ta_key$TAs
+ta_matrix = t(ta_matrix)
 
 # Instructor
-c_matrix = matrix(NA, ncol = length(courses), nrow = nrow(ta_key))
-colnames(c_matrix) = courses
-row.names(c_matrix) = ta_key$TAs
+course_matrix = as.matrix(course_picks[, -1])
+storage.mode(course_matrix) = "numeric"
+row.names(course_matrix) = offered_courses
+course_matrix = t(course_matrix)
 
+#### Match! ####
+results = galeShapley.collegeAdmissions(studentUtils =  ta_matrix, collegeUtils =  course_matrix, slots = 3, studentOptimal = TRUE)
 
+# Is this match optimal?
+galeShapley.checkStability(ta_matrix, course_matrix, results$matched.students, results$matched.colleges)
 
-
-
-
-
-# Make instructor/course matches
-in_co = apply(course_rank, 1, function(x){
-  courses = x[3:5]
-  courses = courses[!is.na(courses)]
-  combo = expand.grid(as.character(x[2]), courses, stringsAsFactors = FALSE)
-  named = as.character(combo$Var2)
-  names(named) = combo$Var1
-})
-
-in_co = unlist(in_co)
-
-#### Make Matrix ####
-ta_natrix = matrix
-
-
-TAs = c("Jared", "Savannah", "RJ", "Ori", "Elyssa", "Tanaya", "Abbey")
-Courses = c("101", "102")
-Key = data.frame("TAs" = TAs, id = 1:7)
-
-TAPref = matrix(runif(2*7), nrow = 2, ncol = 7)
-CoursePref = matrix(runif(7*2), nrow = 7, ncol = 2)
-
-colnames(TAPref) = TAs
-row.names(TAPref) = Courses
-
-colnames(CoursePref) = Courses
-row.names(CoursePref) = TAs
-
-results = galeShapley.collegeAdmissions(studentUtils =  TAPref, collegeUtils =  CoursePref, slots = 3)
-
-galeShapley.checkStability(TAPref, CoursePref, results$matched.students, results$matched.colleges)
-
+# Rename to make readable
 colnames(results$matched.colleges) = c("TA1", "TA2", "TA3")
-row.names(results$matched.colleges) = Courses
+row.names(results$matched.colleges) = offered_courses
 
-results$matched.colleges[] = TAs[match(results$matched.colleges, Key$id)]
+results$matched.colleges[] = ta_key$TAs[match(results$matched.colleges, ta_key$id)]
 results$matched.colleges
 
 

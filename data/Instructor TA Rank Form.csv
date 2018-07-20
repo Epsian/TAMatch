@@ -1,5 +1,5 @@
-Timestamp,Username,What is your first course?,What is your second course?,What is your third course?, [Course 1], [Course 2]
-2018/06/29 9:50:40 PM CDT,Bill@email.com,101,,NA,Jared,
-2018/06/29 9:51:48 PM CDT,smith@email.com,103,105,NA,Jared,Ori
-2018/06/29 9:54:30 PM CDT,Finnigan@email.com,104,NA,NA,Savannah,
-2018/06/29 9:54:30 PM CDT,Finnigan@email.com,102,NA,NA,Elyssa,
+Timestamp,Username,What is your first course?, [Jared], [Savannah], [RJ], [Elyssa], [Ori], [Jonathan], [Grant],, [Jared], [Savannah], [RJ], [Elyssa], [Ori], [Jonathan], [Grant]
+2018/07/19 10:23:02 PM MDT,I1@gsg.com,101,1,2,3,4,5,NA,NA,NA,,,,,,,
+2018/07/19 10:23:02 PM MDT,I2@gsg.com,102,2,3,1,5,NA,NA,4,103,2,3,4,5,6,NA,NA
+2018/07/19 10:23:02 PM MDT,I3@gsg.com,104,5,4,NA,2,NA,1,3,NA,,,,,,,
+2018/07/19 10:23:02 PM MDT,I4@gsg.com,105,NA,2,1,NA,5,3,4,,,,,,,,
