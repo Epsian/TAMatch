@@ -7,7 +7,7 @@ ta_rank = read.csv("data/Grad Student TA Ranking Form.csv", header = TRUE, strin
 course_rank = read.csv("data/Instructor TA Rank Form.csv", header = TRUE, stringsAsFactors = FALSE)
 
 # What courses are being offered? This MUST be in the same order as the google form
-offered_courses = c("101", "102", "103", "104", "105")
+offered_courses = sort(c(course_rank$What.is.your.first.course., course_rank$What.is.your.second.course.))
 
 #### TAs ####
 # Clean Emails
