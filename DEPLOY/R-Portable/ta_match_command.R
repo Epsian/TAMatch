@@ -1,10 +1,18 @@
 
 #### Setup ####
 library(matchingR)
+library(Rcpp)
+
+#### Command Line Args ####
+
+args = commandArgs(trailingOnly = TRUE)
+
+ta_file = args[1]
+i_file = args[2]
 
 #### Data Load ####
-ta_rank = read.csv("data/Grad Student TA Ranking Form.csv", header = TRUE, stringsAsFactors = FALSE)
-course_rank = read.csv("data/Instructor TA Rank Form.csv", header = TRUE, stringsAsFactors = FALSE)
+ta_rank = read.csv(ta_file, header = TRUE, stringsAsFactors = FALSE)
+course_rank = read.csv(i_file, header = TRUE, stringsAsFactors = FALSE)
 
 # What courses are being offered? This MUST be in the same order as the google form
 offered_courses = sort(c(course_rank$What.is.your.first.course., course_rank$What.is.your.second.course.))
@@ -68,13 +76,22 @@ course_matrix = t(course_matrix)
 results = galeShapley.collegeAdmissions(studentUtils =  ta_matrix, collegeUtils =  course_matrix, slots = 3)
 
 # Is this match optimal?
+print("CHECK: Is this match optimal?")
 galeShapley.checkStability(ta_matrix, course_matrix, results$matched.students, results$matched.colleges)
 
 # Rename to make results readable
 colnames(results$matched.colleges) = c("TA1", "TA2", "TA3")
 row.names(results$matched.colleges) = offered_courses
 results$matched.colleges[] = ta_key$TAs[match(results$matched.colleges, ta_key$id)]
+unmatched_courses = table(results$unmatched.colleges)
+names(unmatched_courses) = offered_courses
 
+print("Unmatched students:")
+results$unmatched.students
+
+print("Unmatched courses:")
+unmatched_courses
+
+print("TA Matches:")
 results$matched.colleges
-
 
